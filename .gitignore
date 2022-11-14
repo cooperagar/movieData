@@ -1,0 +1,6 @@
+#May not want to ignore this forever, but for now
+1001Analysis/*
+
+#This will likely always be ignored
+Archive/*
+Templates/*
