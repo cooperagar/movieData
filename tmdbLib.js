@@ -1,10 +1,10 @@
 //A library of TMDb API calls to use for other purposes.
 
-const genreURL = "https://api.themoviedb.org/3/genre/movie/list?api_key=98799fce72c15da05b44580d42411bd7&language=en-US";
-const popularURL = "https://api.themoviedb.org/3/movie/popular?api_key=98799fce72c15da05b44580d42411bd7&language=en-US&page=1";
-const movieDetailsURL = "https://api.themoviedb.org/3/movie/{movie_id}?api_key=98799fce72c15da05b44580d42411bd7&language=en-US";
-const movieCreditsURL = "https://api.themoviedb.org/3/movie/{movie_id}/credits?api_key=98799fce72c15da05b44580d42411bd7&language=en-US";
-const movieReleaseURL = "https://api.themoviedb.org/3/movie/{movie_id}/release_dates?api_key=98799fce72c15da05b44580d42411bd7";
+const genreURL = "https://api.themoviedb.org/3/genre/movie/list?api_key=<<api_key>>&language=en-US".replace("<<api_key>>", config.apiKey);
+const popularURL = "https://api.themoviedb.org/3/movie/popular?api_key=<<api_key>>&language=en-US&page=1".replace("<<api_key>>", config.apiKey);
+const movieDetailsURL = "https://api.themoviedb.org/3/movie/{movie_id}?api_key=<<api_key>>&language=en-US".replace("<<api_key>>", config.apiKey);
+const movieCreditsURL = "https://api.themoviedb.org/3/movie/{movie_id}/credits?api_key=<<api_key>>&language=en-US".replace("<<api_key>>", config.apiKey);
+const movieReleaseURL = "https://api.themoviedb.org/3/movie/{movie_id}/release_dates?api_key=<<api_key>>".replace("<<api_key>>", config.apiKey);
 
 //Queries TMDb and returns an array of all possible genres.
 async function getGenreList() {
