@@ -7,8 +7,17 @@
 	//Also want "Is this not a video?" video: false
 		//This doesn't seem accurate all the time, but such is life
 	//May as well check it's not adult, since we're here.
+	//Do we want to include shorts?
 //Save it
 
+//Load the data
+async function extractList() {
+	file = "./movie_ids_10_18_2022.json";
+	let listResponse = await fetch(file);
+	let listData = await listResponse.json();
+	console.log(listData);
+	return listData;
+}
 
 async function main() {
 	//beans
@@ -17,8 +26,10 @@ async function main() {
 	numFound.innerHTML = "Number Found: ";
 	idCheck.innerHTML = "Currently Checking: ";
 
-	var hpRate = await getMovieRating(775);
-	console.log(hpRate);
+	// var hpRate = await getMovieRating(775);
+	// console.log(hpRate);
+
+	var rawData = extractList();
 
 	// var test = {"foo":3,
 	// 			"bar":4,
