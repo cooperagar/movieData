@@ -19,6 +19,51 @@ async function extractList() {
 	return listData;
 }
 
+//Transform from one-line description to all data
+//Returns the full movie object. 
+//If this oneL is invalid, full.id will be set to -1
+//ARGS: oneL - the one-line movie object from the list
+async function transformOneline(oneL) {
+	var full = {
+		"budget": 0,
+		"genres": [],
+		"id": 0,
+		"lang": "tmdbDeets.original_language",
+		"ogTitle": "tmdbDeets.original_title",
+		"relDate": "tmdbDeets.release_date",
+		"rating" : "NR",
+		"revenue": 0,
+		"runtime": 0,
+		"title": "tmdbDeets.title",
+		"numCast": []
+	};
+	if ((oneL.adult == true) || (oneL.video == true)) {				//skip adult movies and videos
+		full.id = -1;
+		return full;
+	}
+	var tmdbDeets = await getMovieDetails(oneL.id);
+	if (tmdbDeets.runtime < 40) {									//skip shorts
+		full.id = -1;
+		return full;
+	}
+
+	full.budget = tmdbDeets.budget;
+	full.genres = tmdbDeets.genres;
+	full.id = oneL.id;
+	full.lang = tmdbDeets.original_language;
+	full.ogTitle = tmdbDeets.original_title;
+	full.relDate = tmdbDeets.release_date;
+	full.revenue = tmdbDeets.revenue;
+	full.runtime = tmdbDeets.runtime;
+	full.title = tmdbDeets.title;
+
+	full.rating = await getMovieRating(full.id);
+	var cast = await getCast(full.id);
+	full.numCast = cast.length;
+
+	return full;
+}
+
 async function main() {
 	//beans
 	let numFound = document.getElementById("numFound");
@@ -29,7 +74,20 @@ async function main() {
 	// var hpRate = await getMovieRating(775);
 	// console.log(hpRate);
 
-	var rawData = extractList();
+	var rawData = await extractList();
+	var transformed = [];
+
+	//transform
+	for (var i = 0; i < rawData.length; i++) {
+		idCheck.innerHTML = "Currently Checking: " + rawData[i].id;
+		var movie = await transformOneline(rawData[i]);
+		if (movie.id != -1) {
+			transformed.push(movie);
+		}
+		numFound.innerHTML = "Number Found: " + transformed.length;
+	}
+
+	console.log(rawData[379].id);
 
 	// var test = {"foo":3,
 	// 			"bar":4,
