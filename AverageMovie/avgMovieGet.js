@@ -87,7 +87,7 @@ async function main() {
 		numFound.innerHTML = "Number Found: " + transformed.length;
 	}
 
-	console.log(rawData[379].id);
+	console.log(transformed);
 
 	// var test = {"foo":3,
 	// 			"bar":4,

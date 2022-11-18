@@ -55,8 +55,12 @@ async function getPrimaryRelease(movieID, ctry='US') {
 	let response = await fetch(requestURL);
 	let data = await response.json();
 	var relGrp = data.results.filter(d => (d.iso_3166_1 == ctry));
-	if (relGrp.length != 1) {
+	if (relGrp.length > 1) {
 		console.log("Error: multiple release groups for country");
+		return "Error";
+	}
+	if (relGrp.length < 1) {
+		console.log("Error: no release groups for country");
 		return "Error";
 	}
 	var releases = relGrp[0].release_dates;
@@ -103,6 +107,9 @@ async function getPrimaryRelease(movieID, ctry='US') {
 async function getMovieRating(movieID) {
 	var primRel = await getPrimaryRelease(movieID);
 	var rating = "NR";
+	if (primRel === "Error") {
+		return rating;
+	}
 	if (primRel.certification != "") {
 		rating = primRel.certification;
 	}
