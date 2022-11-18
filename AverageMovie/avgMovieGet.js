@@ -12,7 +12,7 @@
 
 //Load the data
 async function extractList() {
-	file = "./movie_ids_10_18_2022.json";
+	file = "./movie_ids_test.json";
 	let listResponse = await fetch(file);
 	let listData = await listResponse.json();
 	console.log(listData);
