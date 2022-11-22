@@ -31,11 +31,12 @@ async function transformOneline(oneL) {
 		"lang": "tmdbDeets.original_language",
 		"ogTitle": "tmdbDeets.original_title",
 		"relDate": "tmdbDeets.release_date",
+		"relYear": 0,
 		"rating" : "NR",
 		"revenue": 0,
 		"runtime": 0,
 		"title": "tmdbDeets.title",
-		"numCast": []
+		"numCast": []												//This might technically be a bug :|
 	};
 	if ((oneL.adult == true) || (oneL.video == true)) {				//skip adult movies and videos
 		full.id = -1;
@@ -53,6 +54,7 @@ async function transformOneline(oneL) {
 	full.lang = tmdbDeets.original_language;
 	full.ogTitle = tmdbDeets.original_title;
 	full.relDate = tmdbDeets.release_date;
+	full.relYear = parseInt(tmdbDeets.release_date.split("-")[0]);
 	full.revenue = tmdbDeets.revenue;
 	full.runtime = tmdbDeets.runtime;
 	full.title = tmdbDeets.title;
@@ -62,6 +64,83 @@ async function transformOneline(oneL) {
 	full.numCast = cast.length;
 
 	return full;
+}
+
+//Summarize the movies to create the average metrics
+//Finds the mean for numerical data
+//Ranks the category data
+//ARGS: movies - the list to summarize
+function summarize(movies) {
+	var sums = {
+		"runtime" : 0,
+		"revBudg" : 0,
+		"relYear" : 0,
+		"numCast" : 0
+	}
+	var counts = {
+		"runtime" : 0,
+		"revBudg" : 0,
+		"relYear" : 0,
+		"numCast" : 0
+	}
+	var catMap = {
+		"lang" : new Map(),
+		"genres" : new Map(),
+		"rating" : new Map()
+	}
+
+	for (var i = 0; i < movies.length; i++) {
+		console.log("Summarizing");
+		//sum & counts
+		if (movies[i].runtime > 0) {
+			sums.runtime += movies[i].runtime;
+			counts.runtime += 1;
+		}
+		if ((movies[i].revenue > 0) && (movies[i].budget > 0)) {
+			sums.revBudg += (movies[i].revenue / movies[i].budget);
+			counts.revBudg += 1;
+		}
+		if (movies[i].relYear > 0) {
+			sums.relYear += movies[i].relYear;
+			counts.relYear += 1;
+		}
+		if (movies[i].numCast > 0) {
+			sums.numCast += movies[i].numCast;
+			counts.numCast += 1;
+		}
+		//map
+		if (!catMap.lang.has(movies[i].lang)) {
+			catMap.lang.set(movies[i].lang, 0);
+		}
+		var curr = catMap.lang.get(movies[i].lang);
+		catMap.lang.set(movies[i].lang, curr + 1);
+		if (!catMap.rating.has(movies[i].rating)) {
+			catMap.rating.set(movies[i].rating, 0);
+		}
+		curr = catMap.rating.get(movies[i].rating);
+		catMap.rating.set(movies[i].rating, curr + 1);
+		for (var g = 0; g < movies[i].genres.length; g++) {
+			if (!catMap.genres.has(movies[i].genres[g])) {
+				catMap.genres.set(movies[i].genres[g], 0);
+			}
+			curr = catMap.genres.get(movies[i].genres[g]);
+			catMap.genres.set(movies[i].genres[g], curr + 1)
+		}
+	}
+
+	var aves = {
+		"runtime" : sums.runtime / counts.runtime,
+		"revBudg" : sums.revBudg / counts.revBudg,
+		"relYear" : sums.relYear / counts.relYear,
+		"numCast" : sums.numCast / counts.numCast,
+		"langs" : Array.from(catMap.lang),
+		"ratings" : Array.from(catMap.rating),
+		"genres" : Array.from(catMap.genres)
+	}
+
+	//console.log(aves);
+
+	return aves;
 }
 
 async function main() {
@@ -88,6 +167,10 @@ async function main() {
 	}
 
 	console.log(transformed);
+
+	var averages = summarize(transformed);
+
+	console.log(averages);
 
 	// var test = {"foo":3,
 	// 			"bar":4,
