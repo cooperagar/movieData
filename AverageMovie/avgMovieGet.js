@@ -75,13 +75,15 @@ function summarize(movies) {
 		"runtime" : 0,
 		"revBudg" : 0,
 		"relYear" : 0,
-		"numCast" : 0
+		"numCast" : 0,
+		"numGens" : 0
 	}
 	var counts = {
 		"runtime" : 0,
 		"revBudg" : 0,
 		"relYear" : 0,
-		"numCast" : 0
+		"numCast" : 0,
+		"numGens" : 0
 	}
 	var catMap = {
 		"lang" : new Map(),
@@ -108,6 +110,10 @@ function summarize(movies) {
 			sums.numCast += movies[i].numCast;
 			counts.numCast += 1;
 		}
+		if (movies[i].genres.length > 0) {
+			sums.numGens += movies[i].genres.length;
+			counts.numGens += 1;
+		}
 		//map
 		if (!catMap.lang.has(movies[i].lang)) {
 			catMap.lang.set(movies[i].lang, 0);
@@ -120,11 +126,11 @@ function summarize(movies) {
 		curr = catMap.rating.get(movies[i].rating);
 		catMap.rating.set(movies[i].rating, curr + 1);
 		for (var g = 0; g < movies[i].genres.length; g++) {
-			if (!catMap.genres.has(movies[i].genres[g])) {
-				catMap.genres.set(movies[i].genres[g], 0);
+			if (!catMap.genres.has(movies[i].genres[g].id)) {
+				catMap.genres.set(movies[i].genres[g].id, 0);
 			}
-			curr = catMap.genres.get(movies[i].genres[g]);
-			catMap.genres.set(movies[i].genres[g], curr + 1)
+			curr = catMap.genres.get(movies[i].genres[g].id);
+			catMap.genres.set(movies[i].genres[g].id, curr + 1)
 		}
 	}
 
@@ -133,10 +139,20 @@ function summarize(movies) {
 		"revBudg" : sums.revBudg / counts.revBudg,
 		"relYear" : sums.relYear / counts.relYear,
 		"numCast" : sums.numCast / counts.numCast,
+		"numGens" : sums.numGens / counts.numGens,
 		"langs" : Array.from(catMap.lang),
 		"ratings" : Array.from(catMap.rating),
 		"genres" : Array.from(catMap.genres)
 	}
+	aves.langs.sort((a,b) => {
+		return b[1] - a[1];
+	});
+	aves.ratings.sort((a,b) => {
+		return b[1] - a[1];
+	});
+	aves.genres.sort((a,b) => {
+		return b[1] - a[1];
+	});
 
 	//console.log(aves);
 
