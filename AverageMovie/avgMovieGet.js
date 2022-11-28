@@ -134,6 +134,8 @@ function summarize(movies) {
 		}
 	}
 
+	console.log("counts.revBudg: " + counts.revBudg);
+
 	var aves = {
 		"runtime" : sums.runtime / counts.runtime,
 		"revBudg" : sums.revBudg / counts.revBudg,
@@ -187,6 +189,9 @@ async function main() {
 	var averages = summarize(transformed);
 
 	console.log(averages);
+
+	let out = document.getElementById("output");
+	out.innerHTML = JSON.stringify(averages);
 
 	// var test = {"foo":3,
 	// 			"bar":4,
