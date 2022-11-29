@@ -25,7 +25,6 @@ async function extractList() {
 //ARGS: oneL - the one-line movie object from the list
 async function transformOneline(oneL) {
 	var full = {
-		"budget": 0,
 		"genres": [],
 		"id": 0,
 		"lang": "tmdbDeets.original_language",
@@ -33,9 +32,10 @@ async function transformOneline(oneL) {
 		"relDate": "tmdbDeets.release_date",
 		"relYear": 0,
 		"rating" : "NR",
-		"revenue": 0,
+		"revBudg": 0,
 		"runtime": 0,
 		"title": "tmdbDeets.title",
+		"numGens": 0,
 		"numCast": []												//This might technically be a bug :|
 	};
 	if ((oneL.adult == true) || (oneL.video == true)) {				//skip adult movies and videos
@@ -48,19 +48,22 @@ async function transformOneline(oneL) {
 		return full;
 	}
 
-	full.budget = tmdbDeets.budget;
 	full.genres = tmdbDeets.genres;
 	full.id = oneL.id;
 	full.lang = tmdbDeets.original_language;
 	full.ogTitle = tmdbDeets.original_title;
 	full.relDate = tmdbDeets.release_date;
 	full.relYear = parseInt(tmdbDeets.release_date.split("-")[0]);
-	full.revenue = tmdbDeets.revenue;
 	full.runtime = tmdbDeets.runtime;
 	full.title = tmdbDeets.title;
 
+	if ((tmdbDeets.revenue > 0) && (tmdbDeets.budget > 0)) {
+		full.revBudg = tmdbDeets.revenue / tmdbDeets.budget;
+	}
+
 	full.rating = await getMovieRating(full.id);
 	var cast = await getCast(full.id);
+	full.numGens = full.genres.length;
 	full.numCast = cast.length;
 
 	return full;
@@ -98,8 +101,8 @@ function summarize(movies) {
 			sums.runtime += movies[i].runtime;
 			counts.runtime += 1;
 		}
-		if ((movies[i].revenue > 0) && (movies[i].budget > 0)) {
-			sums.revBudg += (movies[i].revenue / movies[i].budget);
+		if (movies[i].revBudg > 0) {
+			sums.revBudg += movies[i].revBudg;
 			counts.revBudg += 1;
 		}
 		if (movies[i].relYear > 0) {
@@ -110,8 +113,8 @@ function summarize(movies) {
 			sums.numCast += movies[i].numCast;
 			counts.numCast += 1;
 		}
-		if (movies[i].genres.length > 0) {
-			sums.numGens += movies[i].genres.length;
+		if (movies[i].numGens > 0) {
+			sums.numGens += movies[i].numGens;
 			counts.numGens += 1;
 		}
 		//map
@@ -134,7 +137,7 @@ function summarize(movies) {
 		}
 	}
 
-	console.log("counts.revBudg: " + counts.revBudg);
+	console.log(counts);
 
 	var aves = {
 		"runtime" : sums.runtime / counts.runtime,
@@ -142,14 +145,14 @@ function summarize(movies) {
 		"relYear" : sums.relYear / counts.relYear,
 		"numCast" : sums.numCast / counts.numCast,
 		"numGens" : sums.numGens / counts.numGens,
-		"langs" : Array.from(catMap.lang),
-		"ratings" : Array.from(catMap.rating),
+		"lang" : Array.from(catMap.lang),
+		"rating" : Array.from(catMap.rating),
 		"genres" : Array.from(catMap.genres)
 	}
-	aves.langs.sort((a,b) => {
+	aves.lang.sort((a,b) => {
 		return b[1] - a[1];
 	});
-	aves.ratings.sort((a,b) => {
+	aves.rating.sort((a,b) => {
 		return b[1] - a[1];
 	});
 	aves.genres.sort((a,b) => {
@@ -159,6 +162,60 @@ function summarize(movies) {
 	//console.log(aves);
 
 	return aves;
+}
+
+//Find the standard deviations of the numerical metrics
+//ARGS: movies - the list of raw data
+//		aves - the arithmetic means of the metrics
+function calcDevs(movies, aves) {
+	var sums = {
+		"runtime" : 0,
+		"revBudg" : 0,
+		"relYear" : 0,
+		"numCast" : 0,
+		"numGens" : 0
+	}
+	var counts = {
+		"runtime" : 0,
+		"revBudg" : 0,
+		"relYear" : 0,
+		"numCast" : 0,
+		"numGens" : 0
+	}
+
+	for (var i = 0; i < movies.length; i++) {
+		console.log("Deviating");
+		//sum & counts
+		if (movies[i].runtime > 0) {
+			sums.runtime += (movies[i].runtime - aves.runtime)**2;
+			counts.runtime += 1;
+		}
+		if (movies[i].revBudg > 0) {
+			sums.revBudg += (movies[i].revBudg - aves.revBudg)**2;
+			counts.revBudg += 1;
+		}
+		if (movies[i].relYear > 0) {
+			sums.relYear += (movies[i].relYear - aves.relYear)**2;
+			counts.relYear += 1;
+		}
+		if (movies[i].numCast > 0) {
+			sums.numCast += (movies[i].numCast - aves.numCast)**2;
+			counts.numCast += 1;
+		}
+		if (movies[i].numGens > 0) {
+			sums.numGens += (movies[i].numGens - aves.numGens)**2;
+			counts.numGens += 1;
+		}
+	}
+
+	var devs = {
+		"runtime" : Math.sqrt(sums.runtime / counts.runtime),
+		"revBudg" : Math.sqrt(sums.revBudg / counts.revBudg),
+		"relYear" : Math.sqrt(sums.relYear / counts.relYear),
+		"numCast" : Math.sqrt(sums.numCast / counts.numCast),
+		"numGens" : Math.sqrt(sums.numGens / counts.numGens)
+	}
+	return devs;
 }
 
 async function main() {
@@ -172,26 +229,32 @@ async function main() {
 	// console.log(hpRate);
 
 	var rawData = await extractList();
-	var transformed = [];
+
+	var out = {
+		"trans" : [],
+		"aves" : {},
+		"devs" : {}
+	}
 
 	//transform
 	for (var i = 0; i < rawData.length; i++) {
 		idCheck.innerHTML = "Currently Checking: " + rawData[i].id;
 		var movie = await transformOneline(rawData[i]);
 		if (movie.id != -1) {
-			transformed.push(movie);
+			out.trans.push(movie);
 		}
-		numFound.innerHTML = "Number Found: " + transformed.length;
+		numFound.innerHTML = "Number Found: " + out.trans.length;
 	}
+	console.log(out.trans);
 
-	console.log(transformed);
+	out.aves = summarize(out.trans);
+	console.log(out.aves);
 
-	var averages = summarize(transformed);
+	out.devs = calcDevs(out.trans, out.aves);
+	console.log(out.devs);
 
-	console.log(averages);
-
-	let out = document.getElementById("output");
-	out.innerHTML = JSON.stringify(averages);
+	let print = document.getElementById("output");
+	print.innerHTML = JSON.stringify(out.aves);
 
 	// var test = {"foo":3,
 	// 			"bar":4,
