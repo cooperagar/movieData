@@ -76,14 +76,14 @@ async function transformOneline(oneL) {
 function summarize(movies) {
 	var sums = {
 		"runtime" : 0,
-		"revBudg" : 0,
+		//"revBudg" : 0,
 		"relYear" : 0,
 		"numCast" : 0,
 		"numGens" : 0
 	}
 	var counts = {
 		"runtime" : 0,
-		"revBudg" : 0,
+		//"revBudg" : 0,
 		"relYear" : 0,
 		"numCast" : 0,
 		"numGens" : 0
@@ -101,10 +101,10 @@ function summarize(movies) {
 			sums.runtime += movies[i].runtime;
 			counts.runtime += 1;
 		}
-		if (movies[i].revBudg > 0) {
-			sums.revBudg += movies[i].revBudg;
-			counts.revBudg += 1;
-		}
+		// if (movies[i].revBudg > 0) {
+		// 	sums.revBudg += movies[i].revBudg;
+		// 	counts.revBudg += 1;
+		// }
 		if (movies[i].relYear > 0) {
 			sums.relYear += movies[i].relYear;
 			counts.relYear += 1;
@@ -141,7 +141,7 @@ function summarize(movies) {
 
 	var aves = {
 		"runtime" : sums.runtime / counts.runtime,
-		"revBudg" : sums.revBudg / counts.revBudg,
+		//"revBudg" : sums.revBudg / counts.revBudg,
 		"relYear" : sums.relYear / counts.relYear,
 		"numCast" : sums.numCast / counts.numCast,
 		"numGens" : sums.numGens / counts.numGens,
@@ -170,14 +170,14 @@ function summarize(movies) {
 function calcDevs(movies, aves) {
 	var sums = {
 		"runtime" : 0,
-		"revBudg" : 0,
+		//"revBudg" : 0,
 		"relYear" : 0,
 		"numCast" : 0,
 		"numGens" : 0
 	}
 	var counts = {
 		"runtime" : 0,
-		"revBudg" : 0,
+		//"revBudg" : 0,
 		"relYear" : 0,
 		"numCast" : 0,
 		"numGens" : 0
@@ -190,10 +190,10 @@ function calcDevs(movies, aves) {
 			sums.runtime += (movies[i].runtime - aves.runtime)**2;
 			counts.runtime += 1;
 		}
-		if (movies[i].revBudg > 0) {
-			sums.revBudg += (movies[i].revBudg - aves.revBudg)**2;
-			counts.revBudg += 1;
-		}
+		// if (movies[i].revBudg > 0) {
+		// 	sums.revBudg += (movies[i].revBudg - aves.revBudg)**2;
+		// 	counts.revBudg += 1;
+		// }
 		if (movies[i].relYear > 0) {
 			sums.relYear += (movies[i].relYear - aves.relYear)**2;
 			counts.relYear += 1;
